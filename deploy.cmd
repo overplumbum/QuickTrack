@@ -1,0 +1,1 @@
+copy /Y ..\QuickTrack-build-desktop\release\QuickTrack.exe "%ProgramFiles%\QuickTrack"  || pause

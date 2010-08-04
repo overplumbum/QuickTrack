@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <script type="text/javascript"
+        src="http://maps.google.com/maps/api/js?sensor=false"></script>
+
+
+    <script type="text/javascript">
+        testmode = window.navigator.userAgent.indexOf('QuickTrack') == -1;
+
+        function fitMap()
+        {
+            var mapDiv = document.getElementById('YMapsID');
+            mapDiv.style.width = window.innerWidth + 'px';
+            mapDiv.style.height = window.innerHeight + 'px';
+        }
+
+        function load()
+        {
+            debug(_load);
+        }
+
+        function _load()
+        {
+            fitMap();
+
+            if (!window.gate || !window.gate.tracks) {
+                alert('no data!');
+            }
+
+            var pointMapFunc = function(p) {
+                return new google.maps.LatLng(p[0], p[1]);
+            }
+
+            try {
+                var tracks = eval("(" + gate.tracks + ")");
+            } catch (e) {
+                throw "gate.track evaluation failed:\n" + gate.track;
+            }
+            var center = eval("(" + gate.center + ")");
+
+            center = pointMapFunc(center);
+
+            var mapoptions = {
+                center: center,
+                zoom: gate.zoom,
+                mapTypeControl: true,
+                scrollwheel: true,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            };
+            var map = new google.maps.Map(document.getElementById("YMapsID"), mapoptions);
+
+            var colors = [
+                "#000000",
+                "#9457EB",
+                "#FF3800",
+                "#F0E130",
+                "#4997D0",
+                "#FF003F",
+                "#DFFF00",
+                "#002FA7"
+            ];
+
+            for (var i=0; i<tracks.length; i++) {
+                var track = tracks[i];
+                track.points = track.points.map(pointMapFunc);
+
+                var pline = new google.maps.Polyline();
+                pline.setPath(track.points);
+                pline.setOptions({strokeColor: colors[i%colors.length], strokeOpacity: 0.8});
+                pline.setMap(map);
+            }
+        }
+
+        function debug(call)
+        {
+            try {
+                call();
+            } catch (e) {
+                var info = [
+                    "" + e + "\n\n",
+                    "Message: " + e.message,
+                    "FileName: " + e.fileName,
+                    "LineNumber: " + e.lineNumber,
+                    "Stack: " + e.stack,
+                    "Name: " + e.name,
+                    "Stack: " + e.stack
+                ];
+                document.write("<pre style='white-space: pre-wrap;'>JS Exception:\n" + info.join("\n") + "</pre>");
+                document.close();
+                throw e;
+            }
+        }
+
+        if (testmode) {
+            alert("Test mode!");
+            window.gate = {
+                tracks: "[{name:'',date:'',points:[[55.611160,37.718605,1256988020],[54.706131,38.161690,1256993053],[54.010777,38.272911,1256998198],[54.017239,38.283401,1257095506],[54.415138,38.176193,1257147602],[55.608322,37.718987,1257176409]]}]",
+                zoom: 13,
+                center: "[55.608322,37.718987]"
+            };
+            window.onload = load;
+        }
+    </script>
+    <style type="text/css">
+        *, html, body {
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body onResize="fitMap();">
+    <div id="YMapsID" style="width: 10px; height: 10px;"></div>
+</body>
+</html>
